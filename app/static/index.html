@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="doc_title">PDF OCR Preprocessor</title>
+  <link rel="icon" type="image/png" href="/static/webdocto-logo.png">
+  <link rel="apple-touch-icon" href="/static/webdocto-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="stylesheet" href="/static/styles.css?v=20260529-3">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div
+          class="brand-mark"
+          aria-label="WebDocTo logo"
+          style="width:48px;height:48px;min-width:48px;max-width:48px;min-height:48px;max-height:48px;overflow:hidden;display:block;flex:0 0 48px;border-radius:16px;"
+        >
+          <img
+            src="/static/webdocto-logo.png"
+            alt="WebDocTo logo"
+            width="48"
+            height="48"
+            style="display:block;width:48px;height:48px;min-width:48px;max-width:48px;min-height:48px;max-height:48px;object-fit:cover;"
+          >
+        </div>
+        <div>
+          <div class="brand-title">WebDocTo</div>
+          <div class="brand-subtitle" data-i18n="brand_subtitle">OCR Workflow</div>
+        </div>
+      </div>
+
+      <p class="nav-label" data-i18n="nav_workspace">Workspace</p>
+      <nav class="nav">
+        <button id="nav-dashboard" class="nav-item active" type="button" data-page="dashboard">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 13.2 12 5l9 8.2"/>
+              <path d="M5.5 11.5V20h13V11.5"/>
+            </svg>
+          </span>
+          <span class="nav-copy">
+            <span class="nav-title" data-i18n="nav_dashboard">Dashboard</span>
+            <span class="nav-note" data-i18n="nav_dashboard_note">Upload and process PDFs</span>
+          </span>
+        </button>
+        <button id="nav-history" class="nav-item" type="button" data-page="history">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/>
+              <path d="M3 4v5h5"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+          </span>
+          <span class="nav-copy">
+            <span class="nav-title" data-i18n="nav_history">History</span>
+            <span class="nav-note" data-i18n="nav_history_note">Browse saved sessions</span>
+          </span>
+        </button>
+        <button id="nav-logs" class="nav-item" type="button" data-page="logs">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 6h13"/>
+              <path d="M8 12h13"/>
+              <path d="M8 18h13"/>
+              <path d="M3 6h.01"/>
+              <path d="M3 12h.01"/>
+              <path d="M3 18h.01"/>
+            </svg>
+          </span>
+          <span class="nav-copy">
+            <span class="nav-title" data-i18n="nav_logs">Logs</span>
+            <span class="nav-note" data-i18n="nav_logs_note">View processing activity</span>
+          </span>
+        </button>
+        <button id="nav-settings" class="nav-item" type="button" data-page="settings">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.82 2.82l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-.4-1 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.82-2.82l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1-.4H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1-.4 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.82-2.82l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 .4 1 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.82 2.82l-.06.06A1.7 1.7 0 0 0 19.4 9c.28.3.49.66.6 1 .11.35.17.72.17 1.09s-.06.74-.17 1.09c-.11.34-.32.7-.6 1Z"/>
+            </svg>
+          </span>
+          <span class="nav-copy">
+            <span class="nav-title" data-i18n="nav_settings">Settings</span>
+            <span class="nav-note" data-i18n="nav_settings_note">Theme and language</span>
+          </span>
+        </button>
+      </nav>
+
+      <div id="sidebar-user-card" class="sidebar-user-card" role="button" tabindex="0" aria-label="Open login or profile">
+        <div class="sidebar-user-avatar" id="sidebar-user-avatar" aria-hidden="true">W</div>
+        <div class="sidebar-user-copy">
+          <strong id="sidebar-user-name">Guest User</strong>
+          <span id="sidebar-user-email">-</span>
+          <small id="sidebar-user-role">user</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="login-page" class="app-page app-page-login" hidden>
+        <div class="login-shell">
+          <article class="card login-card login-card-modern">
+            <div class="login-card-head">
+              <p class="eyebrow login-kicker">WebDocTo</p>
+              <h1>เข้าสู่ระบบ WebDocTo</h1>
+              <p class="subtitle">ตั้งค่าหน้า Login ให้ทำงานร่วมกับ Google Login Settings โดยไม่กระทบ workflow OCR เดิม</p>
+            </div>
+
+            <div class="login-grid">
+              <section class="login-panel">
+                <div class="settings-block-head">
+                  <strong>Demo Login</strong>
+                  <p>ใช้สำหรับทดสอบการกำหนด role จากอีเมลด้วย localStorage</p>
+                </div>
+
+                <label class="settings-field">
+                  <span>อีเมลผู้ใช้</span>
+                  <input id="login-email" class="settings-input" type="email" placeholder="user@example.com">
+                </label>
+
+                <div class="login-actions">
+                  <button id="login-demo-btn" class="primary" type="button">เข้าสู่ระบบแบบ Demo</button>
+                  <button id="login-google-btn" class="secondary" type="button">Google Sign-In</button>
+                </div>
+
+                <p id="login-google-note" class="settings-help">Google Login ยังไม่เปิดใช้งาน</p>
+              </section>
+
+              <section class="login-panel login-panel-soft">
+                <div class="settings-block-head">
+                  <strong>สถานะผู้ใช้</strong>
+                  <p>แสดงผล role ที่คำนวณจาก Admin Email List</p>
+                </div>
+
+                <div class="settings-preview-grid login-preview-grid">
+                  <div class="settings-preview-item">
+                    <span>Current Name</span>
+                    <strong id="login-current-name">-</strong>
+                  </div>
+                  <div class="settings-preview-item">
+                    <span>Current Email</span>
+                    <strong id="login-current-email">-</strong>
+                  </div>
+                  <div class="settings-preview-item">
+                    <span>Current Role</span>
+                    <strong id="login-current-role">user</strong>
+                  </div>
+                </div>
+
+                <div id="login-feedback" class="settings-feedback" hidden></div>
+              </section>
+            </div>
+
+            <div class="login-modern-ui">
+              <div class="login-card-head login-card-head-modern">
+                <p class="eyebrow login-kicker">WebDocTo</p>
+                <h1 class="login-welcome">Welcome back</h1>
+                <p class="subtitle login-subtitle">Sign in to continue working with your OCR dashboard and document history.</p>
+              </div>
+
+              <button id="login-google-btn-modern" class="login-google-button" type="button">
+                <span class="login-google-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.2-.9 2.3-1.9 3.1l3.1 2.4c1.8-1.7 2.9-4.1 2.9-7 0-.7-.1-1.4-.2-2H12Z"/>
+                    <path fill="#34A853" d="M12 21c2.6 0 4.8-.9 6.4-2.4l-3.1-2.4c-.9.6-2 .9-3.3.9-2.5 0-4.5-1.7-5.3-3.9H3.5v2.5A9.7 9.7 0 0 0 12 21Z"/>
+                    <path fill="#FBBC05" d="M6.7 13.2A5.8 5.8 0 0 1 6.4 12c0-.4.1-.8.2-1.2V8.3H3.5A9.7 9.7 0 0 0 2.5 12c0 1.5.4 2.9 1 4.1l3.2-2.9Z"/>
+                    <path fill="#4285F4" d="M12 6.9c1.4 0 2.6.5 3.5 1.4l2.6-2.6A9 9 0 0 0 12 3c-3.8 0-7.1 2.2-8.5 5.3l3.2 2.5c.8-2.3 2.8-3.9 5.3-3.9Z"/>
+                  </svg>
+                </span>
+                <span>Continue with Google</span>
+              </button>
+
+              <div class="login-divider">
+                <span>OR SIGN IN WITH EMAIL</span>
+              </div>
+
+              <div class="login-form-grid">
+                <label class="login-field">
+                  <span>Email address</span>
+                  <input id="login-email-modern" class="login-input" type="email" placeholder="you@example.com">
+                </label>
+              </div>
+
+              <div class="login-row login-row-between">
+                <label class="login-remember">
+                  <input type="checkbox" checked>
+                  <span>Keep me signed in</span>
+                </label>
+                <button id="login-demo-btn-modern" class="login-link-button" type="button">Use email sign in</button>
+              </div>
+
+              <button id="login-primary-btn" class="login-submit-button" type="button">Sign in to WebDocTo</button>
+
+              <p id="login-google-note-modern" class="login-note">Google Login is not enabled yet.</p>
+
+              <div id="login-feedback-modern" class="settings-feedback" hidden></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="profile-page" class="app-page app-page-profile" hidden>
+        <div class="profile-shell">
+          <article class="card profile-card">
+            <div class="profile-card-head">
+              <div>
+                <p class="eyebrow" data-i18n="profile_eyebrow">Profile</p>
+                <h1 data-i18n="profile_title">Your Account</h1>
+                <p class="subtitle" data-i18n="profile_subtitle">View your current account, email, and access role for this workspace.</p>
+              </div>
+            </div>
+
+            <div class="profile-summary">
+              <div class="profile-avatar" id="profile-avatar" aria-hidden="true">G</div>
+              <div class="profile-summary-copy">
+                <strong id="profile-name">Guest User</strong>
+                <span id="profile-email">-</span>
+                <small id="profile-role">user</small>
+              </div>
+            </div>
+
+            <div class="profile-meta-grid">
+              <div class="settings-preview-item">
+                <span data-i18n="profile_name_label">Display Name</span>
+                <strong id="profile-name-detail">Guest User</strong>
+              </div>
+              <div class="settings-preview-item">
+                <span data-i18n="profile_email_label">Email</span>
+                <strong id="profile-email-detail">-</strong>
+              </div>
+              <div class="settings-preview-item">
+                <span data-i18n="profile_role_label">Role</span>
+                <strong id="profile-role-detail">user</strong>
+              </div>
+              <div class="settings-preview-item">
+                <span data-i18n="profile_status_label">Status</span>
+                <strong id="profile-status-detail">Guest</strong>
+              </div>
+            </div>
+
+            <div id="profile-feedback" class="settings-feedback" hidden></div>
+
+            <div class="profile-actions">
+              <button id="profile-login-btn" class="primary" type="button" data-i18n="profile_login_btn">Go to Login</button>
+              <button id="profile-logout-btn" class="secondary danger-outline" type="button" data-i18n="profile_logout_btn">Logout</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="dashboard-page" class="app-page is-active">
+        <header id="dashboard-top" class="topbar">
+          <div>
+            <p class="eyebrow" data-i18n="dashboard_eyebrow">Document Pipeline</p>
+            <h1 data-i18n="dashboard_title">PDF OCR Preprocessor</h1>
+            <p class="subtitle" data-i18n="dashboard_subtitle">
+              Upload PDF files or images, split PDF pages into images, and preprocess every page for better OCR accuracy.
+            </p>
+          </div>
+        </header>
+
+        <section class="hero-strip">
+          <article class="metric-card">
+            <div class="metric-head">
+              <span data-i18n="metric_total_pages">Total Pages</span>
+            </div>
+            <span class="metric-icon metric-pages-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5A1.5 1.5 0 0 1 7.5 3.5Z"/>
+                <path d="M15 3.5V8h4"/>
+                <path d="M9 12h6"/>
+                <path d="M9 16h6"/>
+              </svg>
+            </span>
+            <strong id="metric-pages">0</strong>
+            <small data-i18n="metric_total_pages_note">Across all uploaded PDFs</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-head">
+              <span data-i18n="metric_completed">Completed</span>
+            </div>
+            <span class="metric-icon metric-completed-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="m8.8 12.3 2.1 2.2 4.5-4.8"/>
+              </svg>
+            </span>
+            <strong id="metric-completed">0</strong>
+            <small data-i18n="metric_completed_note">Processed pages ready to review</small>
+          </article>
+          <article id="metric-status-card" class="metric-card metric-status-card">
+            <div class="metric-head">
+              <span data-i18n="metric_status">Status</span>
+            </div>
+            <span class="metric-icon metric-status-icon" aria-hidden="true">
+              <img id="metric-status-icon" src="/asset/Loader%20cat.svg" alt="Status icon">
+            </span>
+            <strong id="metric-status">Idle</strong>
+            <small id="metric-status-detail">Waiting for upload</small>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article class="card upload-card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="upload_kicker">Upload</p>
+                <h2 data-i18n="upload_title">Upload Documents for OCR</h2>
+                <p data-i18n="upload_text">Upload PDF or image files to generate clean, OCR-ready page images.</p>
+              </div>
+            </div>
+
+            <label id="dropzone" class="dropzone" for="pdf-input">
+              <input id="pdf-input" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp,image/bmp,image/tiff,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff" multiple hidden>
+              <div class="dropzone-icon">+</div>
+              <strong data-i18n="dropzone_title">Click to upload or drag and drop</strong>
+              <span data-i18n="dropzone_text">PDF, PNG, JPG, WEBP, BMP, TIFF up to 100MB</span>
+            </label>
+
+            <div class="upload-actions">
+              <span id="upload-hint" class="hint">No files uploaded</span>
+            </div>
+
+            <div class="bottom-actions upload-bottom-actions">
+              <button id="cancel-btn" class="secondary danger-outline" type="button" data-i18n="cancel_btn">Cancel</button>
+              <button id="process-btn" class="primary" type="button" data-i18n="start_processing_btn">Start Processing</button>
+            </div>
+          </article>
+
+          <article class="card viewer-card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="compare_kicker">Compare</p>
+                <h2 data-i18n="compare_title">Original vs Processed</h2>
+                <p data-i18n="compare_text">Select a processed page to inspect the before and after result.</p>
+              </div>
+            </div>
+
+            <div id="compare-view" class="compare-view empty-state">
+              <p>Select a page after processing to compare original and processed images.</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="queue-row">
+          <article class="card queue-card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="queue_kicker">Queue</p>
+                <h2 data-i18n="queue_title">Processing Queue</h2>
+                <p data-i18n="queue_text">Add files in multiple rounds, then process the whole queue together.</p>
+              </div>
+              <div id="queue-summary" class="queue-summary">0 files</div>
+            </div>
+            <div id="file-list" class="file-list empty-state">
+              <p>No PDF uploaded yet.</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="lower-grid">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="output_kicker">Output</p>
+                <h2 data-i18n="output_title">Processed Pages</h2>
+                <p data-i18n="output_text">Review page status, inspect each page, and open the compare viewer.</p>
+              </div>
+            </div>
+
+          <div id="page-grid" class="page-grid empty-state">
+              <p>Processed page previews will appear here after OCR starts.</p>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section id="history-page" class="app-page app-page-history" hidden>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" data-i18n="history_eyebrow">History</p>
+            <h1 data-i18n="history_title">Session History</h1>
+            <p class="subtitle" data-i18n="history_subtitle">Sessions found in data/sessions. Remove one item or clear everything.</p>
+          </div>
+        </header>
+
+        <section class="history-section">
+          <article class="card history-card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="history_card_kicker">History</p>
+                <h2 data-i18n="history_card_title">Saved Sessions</h2>
+                <p data-i18n="history_card_text">Browse all uploaded sessions and delete individual items or clear the whole archive.</p>
+              </div>
+              <button id="history-clear-btn" class="secondary history-clear-btn danger-outline" type="button" data-i18n="history_clear">Clear All History</button>
+            </div>
+
+            <div id="history-list" class="history-list empty-state">
+              <p>No saved sessions found.</p>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section id="logs-page" class="app-page app-page-logs" hidden>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" data-i18n="logs_eyebrow">Logs</p>
+            <h1 data-i18n="logs_title">Processing Logs</h1>
+            <p class="subtitle" data-i18n="logs_subtitle">
+              Review upload, OCR, webhook, and processing activity for the current session.
+            </p>
+          </div>
+        </header>
+
+        <section class="history-section">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="logs_card_kicker">Logs</p>
+                <h2 data-i18n="logs_card_title">Activity Stream</h2>
+                <p data-i18n="logs_card_text">Latest messages from the active session are shown below.</p>
+              </div>
+            </div>
+
+            <div id="log-list" class="log-list empty-state">
+              <p>No processing logs yet.</p>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section id="settings-page" class="app-page app-page-settings" hidden>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" data-i18n="settings_eyebrow">Settings</p>
+            <h1 data-i18n="settings_title">Workspace Settings</h1>
+            <p class="subtitle" data-i18n="settings_subtitle">Change theme and language for this browser only.</p>
+          </div>
+        </header>
+
+        <section class="history-section">
+          <article class="card settings-card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker" data-i18n="settings_card_kicker">Settings</p>
+                <h2 data-i18n="settings_card_title">Appearance and Language</h2>
+                <p data-i18n="settings_card_text">Pick the display mode and UI language you want to use.</p>
+              </div>
+            </div>
+
+            <div class="settings-grid">
+              <section class="settings-block">
+                <div class="settings-block-head">
+                  <strong data-i18n="settings_theme_title">Theme</strong>
+                  <p data-i18n="settings_theme_text">Switch between a bright and dark workspace.</p>
+                </div>
+                <div class="settings-option-grid">
+                  <button id="theme-light-btn" class="setting-option" type="button" data-theme-option="light">
+                    <span class="setting-option-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2.2"/>
+                        <path d="M12 19.8V22"/>
+                        <path d="m4.93 4.93 1.56 1.56"/>
+                        <path d="m17.51 17.51 1.56 1.56"/>
+                        <path d="M2 12h2.2"/>
+                        <path d="M19.8 12H22"/>
+                        <path d="m4.93 19.07 1.56-1.56"/>
+                        <path d="m17.51 6.49 1.56-1.56"/>
+                      </svg>
+                    </span>
+                    <span class="setting-option-copy">
+                      <span data-i18n="theme_light">Light</span>
+                    </span>
+                  </button>
+                  <button id="theme-dark-btn" class="setting-option" type="button" data-theme-option="dark">
+                    <span class="setting-option-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.8A8.8 8.8 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8Z"/>
+                      </svg>
+                    </span>
+                    <span class="setting-option-copy">
+                      <span data-i18n="theme_dark">Dark</span>
+                    </span>
+                  </button>
+                </div>
+              </section>
+
+              <section class="settings-block">
+                <div class="settings-block-head">
+                  <strong data-i18n="settings_language_title">Language</strong>
+                  <p data-i18n="settings_language_text">Choose the language used in the interface.</p>
+                </div>
+                <div class="settings-option-grid">
+                  <button id="lang-th-btn" class="setting-option" type="button" data-language-option="th">
+                    <span class="setting-option-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6h16"/>
+                        <path d="M4 12h10"/>
+                        <path d="M4 18h16"/>
+                        <path d="m13 6-3 12"/>
+                      </svg>
+                    </span>
+                    <span class="setting-option-copy">
+                      <span data-i18n="language_th">ไทย</span>
+                    </span>
+                  </button>
+                  <button id="lang-en-btn" class="setting-option" type="button" data-language-option="en">
+                    <span class="setting-option-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M3 12h18"/>
+                        <path d="M12 3a15 15 0 0 1 0 18"/>
+                        <path d="M12 3a15 15 0 0 0 0 18"/>
+                      </svg>
+                    </span>
+                    <span class="setting-option-copy">
+                      <span data-i18n="language_en">English</span>
+                    </span>
+                  </button>
+                </div>
+              </section>
+            </div>
+
+            <section id="settings-webhook-section" class="settings-block settings-block-wide admin-only-section" hidden>
+              <div class="settings-block-head">
+                <strong data-i18n="settings_webhook_title">Webhook Request</strong>
+                <p data-i18n="settings_webhook_text">Edit the URL, HTTP method, and JSON body fields sent with each processed image when you start processing.</p>
+              </div>
+              <div class="settings-form-grid">
+                <label class="settings-field">
+                  <span data-i18n="settings_webhook_url_label">Webhook URL</span>
+                  <input id="settings-webhook-url" class="settings-input" type="url" placeholder="https://example.com/webhook">
+                </label>
+                <label class="settings-field">
+                  <span data-i18n="settings_webhook_method_label">HTTP Method</span>
+                  <select id="settings-webhook-method" class="settings-input">
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                  </select>
+                </label>
+              </div>
+              <label class="settings-field settings-field-full">
+                <span data-i18n="settings_webhook_body_label">Body Fields (JSON)</span>
+                <textarea id="settings-webhook-body" class="settings-textarea" rows="10" spellcheck="false"></textarea>
+              </label>
+              <p class="settings-help" data-i18n="settings_webhook_help">The processed image file is attached automatically. Available placeholders: {{sessionId}}, {{metadata_json}}, {{page.pageNumber}}, {{page.sourceFileName}}, {{page.processedFilename}}.</p>
+            </section>
+
+            <div class="settings-preview">
+              <div class="settings-preview-head">
+                <strong data-i18n="settings_preview_title">Current Preferences</strong>
+                <p data-i18n="settings_preview_text">These choices are saved in your browser and restored on refresh.</p>
+              </div>
+              <div class="settings-preview-grid">
+                <div class="settings-preview-item">
+                  <span data-i18n="settings_current_theme">Theme</span>
+                  <strong id="settings-theme-value">Light</strong>
+                </div>
+                <div class="settings-preview-item">
+                  <span data-i18n="settings_current_language">Language</span>
+                  <strong id="settings-language-value">English</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="settings-current-session-card" class="card settings-card">
+            <div class="card-head">
+              <div>
+                <p class="section-kicker">Session</p>
+                <h2>Current Session</h2>
+                <p>Shows the user identity and role resolved from your current sign-in method.</p>
+              </div>
+            </div>
+            <div class="settings-status-box settings-session-box">
+              <div class="settings-preview-grid">
+                <div class="settings-preview-item">
+                  <span>Current Name</span>
+                  <strong id="login-current-name-modern">-</strong>
+                </div>
+                <div class="settings-preview-item">
+                  <span>Current Email</span>
+                  <strong id="login-current-email-modern">-</strong>
+                </div>
+                <div class="settings-preview-item">
+                  <span>Current Role</span>
+                  <strong id="login-current-role-modern">user</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article id="google-login-settings-card" class="card settings-card google-settings-card admin-only-section" hidden>
+            <div class="card-head">
+              <div>
+                <p class="section-kicker">Google Login</p>
+                <h2>การเข้าสู่ระบบด้วย Google</h2>
+                <p>ตั้งค่า OAuth Client ID, Client Secret และ Redirect URI สำหรับเปิดใช้งาน Google Sign-In</p>
+              </div>
+            </div>
+
+            <div class="google-settings-grid">
+              <section class="settings-block">
+                <div class="google-settings-toggle-row">
+                  <div class="settings-block-head google-settings-toggle-copy">
+                    <strong>เปิดใช้งาน Google Login</strong>
+                    <p>ถ้าเปิดไว้ ปุ่ม Google Sign-In ในหน้า Login จะพร้อมใช้งาน</p>
+                  </div>
+                  <label class="switch" aria-label="Enable Google Login">
+                    <input id="google-login-enabled" type="checkbox">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <label class="settings-field">
+                  <span>Google Client ID</span>
+                  <input id="google-client-id" class="settings-input" type="text" placeholder="กรอก Google Client ID">
+                  <small class="settings-help">ตัวอย่าง: xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com</small>
+                </label>
+
+                <label class="settings-field">
+                  <span>Google Client Secret</span>
+                  <div class="settings-secret-wrap">
+                    <input id="google-client-secret" class="settings-input" type="password" placeholder="กรอก Google Client Secret">
+                    <button id="google-secret-toggle" class="secondary settings-inline-btn" type="button" aria-label="Toggle client secret visibility">👁</button>
+                  </div>
+                  <small class="settings-help settings-danger-text">ไม่ควรเก็บ Client Secret ไว้ใน Frontend สำหรับ Production ควรเก็บที่ Backend หรือ Environment Variable</small>
+                </label>
+
+                <div class="settings-form-grid">
+                  <label class="settings-field">
+                    <span>Authorized JavaScript Origin</span>
+                    <input id="google-javascript-origin" class="settings-input" type="text" placeholder="http://127.0.0.1:8000">
+                    <small class="settings-help">ต้องนำค่านี้ไปใส่ใน Google Cloud Console &gt; Authorized JavaScript origins</small>
+                  </label>
+
+                  <div class="settings-field settings-copy-stack">
+                    <span>&nbsp;</span>
+                    <button id="copy-javascript-origin-btn" class="secondary" type="button">คัดลอก JavaScript Origin</button>
+                  </div>
+                </div>
+
+                <div class="settings-form-grid">
+                  <label class="settings-field">
+                    <span>Authorized Redirect URI</span>
+                    <input id="google-redirect-uri" class="settings-input" type="text" placeholder="http://localhost:8080/login/oauth2/code/google">
+                    <small class="settings-help">ต้องนำค่านี้ไปใส่ใน Google Cloud Console &gt; Authorized redirect URIs</small>
+                  </label>
+
+                  <div class="settings-field settings-copy-stack">
+                    <span>&nbsp;</span>
+                    <button id="copy-redirect-uri-btn" class="secondary" type="button">คัดลอก Redirect URI</button>
+                  </div>
+                </div>
+
+                <label class="settings-field">
+                  <span>Backend Google Login URL</span>
+                  <input id="google-login-url" class="settings-input" type="text" placeholder="http://localhost:8080/oauth2/authorization/google">
+                  <small class="settings-help">ใช้สำหรับปุ่ม Google Sign-In ที่หน้า Login</small>
+                </label>
+
+                <label class="settings-field">
+                  <span>Frontend Login Success URL</span>
+                  <input id="google-login-success-url" class="settings-input" type="text" placeholder="http://127.0.0.1:8000/#dashboard">
+                  <small class="settings-help">ใช้สำหรับ redirect กลับมาหลัง login สำเร็จ</small>
+                </label>
+
+                <label class="settings-field settings-field-full">
+                  <span>Admin Email List</span>
+                  <textarea id="admin-email-list" class="settings-textarea" rows="7" placeholder="admin@example.com&#10;manager@example.com&#10;owner@example.com"></textarea>
+                  <small class="settings-help">กรอก email admin ได้ทีละบรรทัด ระบบจะเช็กแบบ case-insensitive และถ้าไม่อยู่ใน list จะได้ role = user โดยไม่ถูก block</small>
+                </label>
+
+                <div class="settings-button-row">
+                  <button id="save-google-settings-btn" class="primary" type="button">บันทึกการตั้งค่า</button>
+                  <button id="test-google-login-btn" class="secondary" type="button">ทดสอบ URL Google Login</button>
+                </div>
+              </section>
+
+              <section class="settings-block">
+                <div id="google-login-status-box" class="settings-status-box settings-status-box-pending">
+                  <strong id="google-login-status-title">ยังตั้งค่า Google Login ไม่ครบ</strong>
+                  <p id="google-login-status-text">กรอก Client ID และ Backend Google Login URL พร้อมเปิดใช้งาน Google Login ก่อน</p>
+                </div>
+
+                <div class="settings-warning-box">
+                  <strong>คำเตือนด้านความปลอดภัย</strong>
+                  <p>สำหรับระบบ Production ไม่ควรเก็บ Client Secret ไว้ใน localStorage หรือ frontend โดยตรง ควรเก็บไว้ที่ Backend หรือ Environment Variable เท่านั้น</p>
+                </div>
+
+                <div class="settings-guide-box">
+                  <strong>วิธีตั้งค่า Google Cloud Console</strong>
+                  <ol class="settings-guide-list">
+                    <li>ไปที่ Google Cloud Console</li>
+                    <li>เข้าเมนู APIs &amp; Services</li>
+                    <li>ไปที่ OAuth consent screen</li>
+                    <li>ตั้งค่า App name เป็น WebDocTo</li>
+                    <li>ไปที่ Credentials</li>
+                    <li>กด Create Credentials</li>
+                    <li>เลือก OAuth client ID</li>
+                    <li>Application type เลือก Web application</li>
+                    <li>ใส่ Authorized JavaScript origins โดยใช้ค่าจากช่อง Authorized JavaScript Origin</li>
+                    <li>ใส่ Authorized redirect URIs โดยใช้ค่าจากช่อง Authorized Redirect URI</li>
+                    <li>กด Create</li>
+                    <li>Copy Client ID และ Client Secret มาใส่ในหน้านี้</li>
+                    <li>กดบันทึกการตั้งค่า</li>
+                  </ol>
+                </div>
+
+                <div id="google-settings-feedback" class="settings-feedback" hidden></div>
+              </section>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="image-modal" class="image-modal" hidden>
+    <div id="image-modal-backdrop" class="image-modal-backdrop"></div>
+    <div class="image-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="image-modal-title">
+      <div class="image-modal-head">
+        <div>
+          <p id="image-modal-kicker" class="section-kicker">Preview</p>
+          <strong id="image-modal-title">Page Preview</strong>
+        </div>
+        <div class="image-modal-actions">
+          <div class="image-modal-zoom">
+            <button id="image-modal-zoom-reset" class="image-modal-tool image-modal-zoom-value" type="button" aria-label="Reset zoom" data-i18n="button_reset">Reset</button>
+            <button id="image-modal-zoom-out" class="image-modal-tool" type="button" aria-label="Zoom out">-</button>
+            <span id="image-modal-zoom-display" class="image-modal-zoom-display" aria-live="polite">100%</span>
+            <button id="image-modal-zoom-in" class="image-modal-tool" type="button" aria-label="Zoom in">+</button>
+          </div>
+          <button id="image-modal-close" class="image-modal-close image-modal-close-danger" type="button" aria-label="Close preview" data-i18n="button_close">Close</button>
+        </div>
+      </div>
+      <div id="image-modal-body" class="image-modal-body">
+        <div id="image-modal-stage" class="image-modal-stage">
+          <img id="image-modal-img" src="" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="json-modal" class="json-modal" hidden>
+    <div id="json-modal-backdrop" class="json-modal-backdrop"></div>
+    <div class="json-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="json-modal-title">
+      <div class="json-modal-head">
+        <div>
+          <p id="json-modal-kicker" class="section-kicker">Webhook JSON</p>
+          <strong id="json-modal-title">n8n Response</strong>
+        </div>
+        <div class="image-modal-actions">
+          <button id="json-modal-download" class="image-modal-tool" type="button" data-i18n="button_download_json">Download JSON</button>
+          <button id="json-modal-close" class="image-modal-close danger-outline" type="button" aria-label="Close JSON preview" data-i18n="button_close">Close</button>
+        </div>
+      </div>
+      <div class="json-modal-body">
+        <div class="json-modal-section">
+          <span class="json-modal-label" data-i18n="json_table_view">Table View</span>
+          <div id="json-modal-table" class="json-modal-table empty-state">
+            <p>No JSON response available.</p>
+          </div>
+        </div>
+        <div class="json-modal-section">
+          <span class="json-modal-label" data-i18n="json_raw_view">Raw JSON</span>
+          <pre id="json-modal-raw" class="json-modal-raw">{}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20260529-3" defer></script>
+</body>
+</html>

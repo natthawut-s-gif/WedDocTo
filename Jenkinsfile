@@ -1,11 +1,3 @@
-def runStep(String unixCommand, String windowsCommand = null) {
-  if (isUnix()) {
-    sh unixCommand
-  } else {
-    bat(windowsCommand ?: unixCommand)
-  }
-}
-
 pipeline {
   agent any
 
@@ -57,6 +49,9 @@ pipeline {
     COMPOSE_DOCKER_CLI_BUILD = '1'
     DOCKER_BUILDKIT = '1'
     IMAGE_NAME = 'webdocto'
+    COMPOSE_FILE = "${params.COMPOSE_FILE}"
+    APP_SERVICE = "${params.APP_SERVICE}"
+    HEALTH_URL = "${params.HEALTH_URL}"
   }
 
   stages {
@@ -68,67 +63,40 @@ pipeline {
 
     stage('Runtime Check') {
       steps {
-        script {
-          if (isUnix()) {
-            sh '''
-              set -eu
-              echo "=================================================="
-              echo "RUNTIME CHECK"
-              echo "=================================================="
+        sh '''
+          set -eu
+          echo "=================================================="
+          echo "RUNTIME CHECK"
+          echo "=================================================="
 
-              require_cmd() {
-                if ! command -v "$1" >/dev/null 2>&1; then
-                  echo "[ERROR] Missing required command: $1"
-                  exit 1
-                fi
-              }
-
-              require_cmd python3
-              require_cmd docker
-              require_cmd node
-              require_cmd curl
-
-              docker compose version >/dev/null 2>&1 || {
-                echo "[ERROR] docker compose plugin is not available"
-                exit 1
-              }
-
-              docker info >/dev/null 2>&1 || {
-                echo "[ERROR] Docker daemon is not reachable"
-                exit 1
-              }
-
-              echo "[OK] Python: $(python3 --version)"
-              echo "[OK] Node  : $(node --version)"
-              echo "[OK] curl  : $(curl --version | head -n 1)"
-              echo "[OK] Docker: $(docker --version)"
-              echo "[OK] Compose: $(docker compose version | head -n 1)"
-            '''
-          } else {
-            bat '''
-              @echo off
-              echo ==================================================
-              echo RUNTIME CHECK
-              echo ==================================================
-
-              where python >nul 2>nul || (echo [ERROR] Missing required command: python & exit /b 1)
-              where docker >nul 2>nul || (echo [ERROR] Missing required command: docker & exit /b 1)
-              where node >nul 2>nul || (echo [ERROR] Missing required command: node & exit /b 1)
-
-              docker compose version >nul 2>nul || (echo [ERROR] docker compose plugin is not available & exit /b 1)
-              docker info >nul 2>nul || (echo [ERROR] Docker daemon is not reachable & exit /b 1)
-
-              for /f "delims=" %%i in ('python --version') do echo [OK] Python: %%i
-              for /f "delims=" %%i in ('node --version') do echo [OK] Node  : %%i
-              for /f "delims=" %%i in ('docker --version') do echo [OK] Docker: %%i
-              for /f "delims=" %%i in ('docker compose version') do (
-                echo [OK] Compose: %%i
-                goto :doneCompose
-              )
-              :doneCompose
-            '''
+          require_cmd() {
+            if ! command -v "$1" >/dev/null 2>&1; then
+              echo "[ERROR] Missing required command: $1"
+              exit 1
+            fi
           }
-        }
+
+          require_cmd python3
+          require_cmd docker
+          require_cmd node
+          require_cmd curl
+
+          docker compose version >/dev/null 2>&1 || {
+            echo "[ERROR] docker compose plugin is not available"
+            exit 1
+          }
+
+          docker info >/dev/null 2>&1 || {
+            echo "[ERROR] Docker daemon is not reachable"
+            exit 1
+          }
+
+          echo "[OK] Python : $(python3 --version)"
+          echo "[OK] Node   : $(node --version)"
+          echo "[OK] curl   : $(curl --version | head -n 1)"
+          echo "[OK] Docker : $(docker --version)"
+          echo "[OK] Compose: $(docker compose version | head -n 1)"
+        '''
       }
     }
 
@@ -148,39 +116,27 @@ N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/W
 
     stage('Static Validation') {
       steps {
-        script {
-          runStep(
-            '''
-              set -eu
-              python3 -m py_compile app/main.py app/processing.py ocr_preprocess.py
-              node --check app/static/app.js
-              docker compose --env-file .env.production -f "${COMPOSE_FILE}" config >/dev/null
-            ''',
-            '''
-              @echo off
-              python -m py_compile app\\main.py app\\processing.py ocr_preprocess.py || exit /b 1
-              node --check app\\static\\app.js || exit /b 1
-              docker compose --env-file .env.production -f "%COMPOSE_FILE%" config >nul || exit /b 1
-            '''
-          )
-        }
+        sh '''
+          set -eu
+          echo "=================================================="
+          echo "STATIC VALIDATION"
+          echo "=================================================="
+          python3 -m py_compile app/main.py app/processing.py ocr_preprocess.py
+          node --check app/static/app.js
+          docker compose --env-file .env.production -f "${COMPOSE_FILE}" config >/dev/null
+        '''
       }
     }
 
     stage('Build Docker Image') {
       steps {
-        script {
-          runStep(
-            '''
-              set -eu
-              docker compose --env-file .env.production -f "${COMPOSE_FILE}" build
-            ''',
-            '''
-              @echo off
-              docker compose --env-file .env.production -f "%COMPOSE_FILE%" build || exit /b 1
-            '''
-          )
-        }
+        sh '''
+          set -eu
+          echo "=================================================="
+          echo "BUILD DOCKER IMAGE"
+          echo "=================================================="
+          docker compose --env-file .env.production -f "${COMPOSE_FILE}" build
+        '''
       }
     }
 
@@ -189,18 +145,13 @@ N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/W
         expression { return params.DEPLOY }
       }
       steps {
-        script {
-          runStep(
-            '''
-              set -eu
-              docker compose --env-file .env.production -f "${COMPOSE_FILE}" up -d --build --remove-orphans
-            ''',
-            '''
-              @echo off
-              docker compose --env-file .env.production -f "%COMPOSE_FILE%" up -d --build --remove-orphans || exit /b 1
-            '''
-          )
-        }
+        sh '''
+          set -eu
+          echo "=================================================="
+          echo "DEPLOY"
+          echo "=================================================="
+          docker compose --env-file .env.production -f "${COMPOSE_FILE}" up -d --build --remove-orphans
+        '''
       }
     }
 
@@ -209,69 +160,36 @@ N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/W
         expression { return params.DEPLOY }
       }
       steps {
-        script {
-          if (isUnix()) {
-            sh '''
-              set -eu
-              attempts=20
-              count=1
-              until curl --fail --silent "${HEALTH_URL}" >/dev/null; do
-                if [ "$count" -ge "$attempts" ]; then
-                  echo "[ERROR] Health check failed: ${HEALTH_URL}"
-                  docker compose --env-file .env.production -f "${COMPOSE_FILE}" ps || true
-                  docker compose --env-file .env.production -f "${COMPOSE_FILE}" logs --tail=200 "${APP_SERVICE}" || true
-                  exit 1
-                fi
-                echo "Waiting for health endpoint ${HEALTH_URL} (${count}/${attempts})"
-                count=$((count + 1))
-                sleep 5
-              done
-              echo "[OK] Health check passed: ${HEALTH_URL}"
-            '''
-          } else {
-            powershell '''
-              $attempts = 20
-              for ($i = 1; $i -le $attempts; $i++) {
-                try {
-                  $response = Invoke-WebRequest -Uri $env:HEALTH_URL -UseBasicParsing -TimeoutSec 5
-                  if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
-                    Write-Host "[OK] Health check passed: $env:HEALTH_URL"
-                    exit 0
-                  }
-                } catch {}
-
-                if ($i -eq $attempts) {
-                  Write-Host "[ERROR] Health check failed: $env:HEALTH_URL"
-                  docker compose --env-file .env.production -f $env:COMPOSE_FILE ps
-                  docker compose --env-file .env.production -f $env:COMPOSE_FILE logs --tail=200 $env:APP_SERVICE
-                  exit 1
-                }
-
-                Write-Host "Waiting for health endpoint $env:HEALTH_URL ($i/$attempts)"
-                Start-Sleep -Seconds 5
-              }
-            '''
-          }
-        }
+        sh '''
+          set -eu
+          echo "=================================================="
+          echo "HEALTH CHECK"
+          echo "=================================================="
+          attempts=20
+          count=1
+          until curl --fail --silent "${HEALTH_URL}" >/dev/null; do
+            if [ "$count" -ge "$attempts" ]; then
+              echo "[ERROR] Health check failed: ${HEALTH_URL}"
+              docker compose --env-file .env.production -f "${COMPOSE_FILE}" ps || true
+              docker compose --env-file .env.production -f "${COMPOSE_FILE}" logs --tail=200 "${APP_SERVICE}" || true
+              exit 1
+            fi
+            echo "Waiting for health endpoint ${HEALTH_URL} (${count}/${attempts})"
+            count=$((count + 1))
+            sleep 5
+          done
+          echo "[OK] Health check passed: ${HEALTH_URL}"
+        '''
       }
     }
   }
 
   post {
     always {
-      script {
-        runStep(
-          '''
-            set +e
-            docker compose --env-file .env.production -f "${COMPOSE_FILE}" ps
-          ''',
-          '''
-            @echo off
-            docker compose --env-file .env.production -f "%COMPOSE_FILE%" ps
-            exit /b 0
-          '''
-        )
-      }
+      sh '''
+        set +e
+        docker compose --env-file .env.production -f "${COMPOSE_FILE}" ps
+      '''
     }
 
     success {
@@ -279,19 +197,10 @@ N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/W
     }
 
     failure {
-      script {
-        runStep(
-          '''
-            set +e
-            docker compose --env-file .env.production -f "${COMPOSE_FILE}" logs --tail=200 "${APP_SERVICE}"
-          ''',
-          '''
-            @echo off
-            docker compose --env-file .env.production -f "%COMPOSE_FILE%" logs --tail=200 "%APP_SERVICE%"
-            exit /b 0
-          '''
-        )
-      }
+      sh '''
+        set +e
+        docker compose --env-file .env.production -f "${COMPOSE_FILE}" logs --tail=200 "${APP_SERVICE}"
+      '''
     }
   }
 }

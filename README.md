@@ -92,6 +92,34 @@ http://127.0.0.1:8000
 
 ## Docker
 
+### Build Docker image
+
+Build the web application image directly with Docker:
+
+```bash
+docker build -t webdocto:1.0.0 .
+```
+
+If you want to pass a version at build time:
+
+```bash
+docker build --build-arg APP_VERSION=1.0.0 -t webdocto:1.0.0 .
+```
+
+### Run Docker image
+
+Run the built image manually:
+
+```bash
+docker run --rm -p 8000:8000 webdocto:1.0.0
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
 ### Run with Docker Compose
 
 ```bash

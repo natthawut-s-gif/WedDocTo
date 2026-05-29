@@ -167,7 +167,8 @@ N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/W
           echo "=================================================="
           attempts=20
           count=1
-          until curl --fail --silent "${HEALTH_URL}" >/dev/null; do
+          until docker compose --env-file .env.production -f "${COMPOSE_FILE}" exec -T "${APP_SERVICE}" \
+            curl --fail --silent "${HEALTH_URL}" >/dev/null; do
             if [ "$count" -ge "$attempts" ]; then
               echo "[ERROR] Health check failed: ${HEALTH_URL}"
               docker compose --env-file .env.production -f "${COMPOSE_FILE}" ps || true

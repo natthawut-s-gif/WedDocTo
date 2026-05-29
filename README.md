@@ -92,6 +92,17 @@ http://127.0.0.1:8000
 
 ## Docker
 
+### Prepare source code on server
+
+If you want to build and run this project on another server, you must clone the Git repository to that server first.
+
+```bash
+git clone https://github.com/natthawut-s-gif/WedDocTo.git
+cd WedDocTo
+```
+
+Then build or run Docker from inside the project folder.
+
 ### Build Docker image
 
 Build the web application image directly with Docker:
@@ -104,6 +115,17 @@ If you want to pass a version at build time:
 
 ```bash
 docker build --build-arg APP_VERSION=1.0.0 -t webdocto:1.0.0 .
+```
+
+If you want to control the container user and pip version too:
+
+```bash
+docker build \
+  --build-arg APP_VERSION=1.0.0 \
+  --build-arg APP_UID=10001 \
+  --build-arg APP_GID=10001 \
+  --build-arg PIP_VERSION=25.1.1 \
+  -t webdocto:1.0.0 .
 ```
 
 ### Run Docker image
@@ -121,6 +143,8 @@ http://127.0.0.1:8000
 ```
 
 ### Run with Docker Compose
+
+If this is a fresh server, clone the repository first, then run:
 
 ```bash
 docker compose up --build
@@ -151,6 +175,9 @@ Main variables:
 
 - `APP_VERSION`
 - `PYTHON_VERSION`
+- `APP_UID`
+- `APP_GID`
+- `PIP_VERSION`
 - `WEB_PORT`
 - `WEBDOCTO_SECRET`
 - `N8N_WEBHOOK_URL`
@@ -200,8 +227,38 @@ Main Jenkins parameters:
 
 - `APP_VERSION`
 - `PYTHON_VERSION`
+- `APP_UID`
+- `APP_GID`
+- `PIP_VERSION`
 - `WEB_PORT`
 - `DEPLOY`
+
+## GitHub Releases And Packages
+
+The repository now includes a GitHub Actions workflow:
+
+- [`.github/workflows/package-and-release.yml`](.github/workflows/package-and-release.yml)
+
+What it does:
+
+- builds the Docker image
+- publishes the image to GitHub Container Registry (`ghcr.io`)
+- creates a GitHub Release
+
+How to use it:
+
+1. Push a Git tag like `v1.0.0`
+2. GitHub Actions will:
+   - create Release `v1.0.0`
+   - publish package `ghcr.io/natthawut-s-gif/weddocto:1.0.0`
+   - publish package `ghcr.io/natthawut-s-gif/weddocto:latest`
+
+Example:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
 
 ## Main Files
 

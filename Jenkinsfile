@@ -19,6 +19,21 @@ pipeline {
       description: 'Docker Python base image tag passed to Docker build.'
     )
     string(
+      name: 'APP_UID',
+      defaultValue: '10001',
+      description: 'Container runtime UID for the app user.'
+    )
+    string(
+      name: 'APP_GID',
+      defaultValue: '10001',
+      description: 'Container runtime GID for the app user.'
+    )
+    string(
+      name: 'PIP_VERSION',
+      defaultValue: '25.1.1',
+      description: 'pip version installed during Docker image build.'
+    )
+    string(
       name: 'WEB_PORT',
       defaultValue: '8000',
       description: 'Host port for the deployed WebDocTo container.'
@@ -106,6 +121,9 @@ pipeline {
           writeFile file: 'VERSION', text: "${params.APP_VERSION}\n"
           writeFile file: '.env.production', text: """APP_VERSION=${params.APP_VERSION}
 PYTHON_VERSION=${params.PYTHON_VERSION}
+APP_UID=${params.APP_UID}
+APP_GID=${params.APP_GID}
+PIP_VERSION=${params.PIP_VERSION}
 WEB_PORT=${params.WEB_PORT}
 WEBDOCTO_SECRET=${env.WEBDOCTO_SECRET ?: 'change-me-in-production'}
 N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/WebDocToFolw'}

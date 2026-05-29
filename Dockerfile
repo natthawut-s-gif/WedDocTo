@@ -2,6 +2,9 @@ ARG PYTHON_VERSION=3.11.13-slim-bookworm
 FROM python:${PYTHON_VERSION}
 
 ARG APP_VERSION=1.0.0
+ARG APP_UID=10001
+ARG APP_GID=10001
+ARG PIP_VERSION=25.1.1
 
 LABEL org.opencontainers.image.title="WebDocTo" \
       org.opencontainers.image.description="PDF OCR Preprocessor" \
@@ -24,13 +27,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt VERSION ./
-RUN python -m pip install --upgrade pip==25.1.1 && \
+RUN python -m pip install --upgrade pip==${PIP_VERSION} && \
     pip install -r requirements.txt
 
 COPY app ./app
 COPY ocr_preprocess.py ./
 
-RUN useradd --create-home --shell /bin/bash appuser && \
+RUN groupadd --gid "${APP_GID}" appuser && \
+    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --shell /bin/bash appuser && \
     mkdir -p /app/data && \
     chown -R appuser:appuser /app
 

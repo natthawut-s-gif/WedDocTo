@@ -181,6 +181,35 @@ Main variables:
 - `WEB_PORT`
 - `WEBDOCTO_SECRET`
 - `N8N_WEBHOOK_URL`
+- `PUBLIC_WEB_ORIGIN`
+- `GOOGLE_LOGIN_ENABLED`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_JAVASCRIPT_ORIGIN`
+- `GOOGLE_REDIRECT_URI`
+- `GOOGLE_LOGIN_URL`
+- `GOOGLE_LOGIN_SUCCESS_URL`
+- `GOOGLE_ADMIN_EMAIL_LIST`
+
+### Google Login in Docker
+
+If you run the project in Docker and want `Continue with Google` to work on a fresh container, set the Google values in `.env.production` before running `docker compose up`.
+
+Example:
+
+```env
+PUBLIC_WEB_ORIGIN=http://127.0.0.1:8000
+GOOGLE_LOGIN_ENABLED=true
+GOOGLE_CLIENT_ID=xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_JAVASCRIPT_ORIGIN=http://127.0.0.1:8000
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/login/oauth2/code/google
+GOOGLE_LOGIN_URL=http://127.0.0.1:8000/#login-google
+GOOGLE_LOGIN_SUCCESS_URL=http://127.0.0.1:8000/#dashboard
+GOOGLE_ADMIN_EMAIL_LIST=admin@gmail.com
+```
+
+Without these values, a fresh Docker container will keep Google Login disabled until you configure it from the Settings page.
 
 ## Health and Version Endpoints
 

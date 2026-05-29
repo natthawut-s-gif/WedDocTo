@@ -20,13 +20,13 @@ pipeline {
     )
     string(
       name: 'APP_UID',
-      defaultValue: '10001',
-      description: 'Container runtime UID for the app user.'
+      defaultValue: 'auto',
+      description: 'Container runtime UID for the app user. Use auto to match the Linux Jenkins user.'
     )
     string(
       name: 'APP_GID',
-      defaultValue: '10001',
-      description: 'Container runtime GID for the app user.'
+      defaultValue: 'auto',
+      description: 'Container runtime GID for the app user. Use auto to match the Linux Jenkins user.'
     )
     string(
       name: 'PIP_VERSION',
@@ -118,16 +118,30 @@ pipeline {
     stage('Prepare Build Metadata') {
       steps {
         script {
+          def requestedUid = params.APP_UID?.trim()
+          def requestedGid = params.APP_GID?.trim()
+          def resolvedUid = (requestedUid && requestedUid != 'auto') ? requestedUid : sh(returnStdout: true, script: 'id -u').trim()
+          def resolvedGid = (requestedGid && requestedGid != 'auto') ? requestedGid : sh(returnStdout: true, script: 'id -g').trim()
+
+          echo "Using APP_UID=${resolvedUid}"
+          echo "Using APP_GID=${resolvedGid}"
+
           writeFile file: 'VERSION', text: "${params.APP_VERSION}\n"
           writeFile file: '.env.production', text: """APP_VERSION=${params.APP_VERSION}
 PYTHON_VERSION=${params.PYTHON_VERSION}
-APP_UID=${params.APP_UID}
-APP_GID=${params.APP_GID}
+APP_UID=${resolvedUid}
+APP_GID=${resolvedGid}
 PIP_VERSION=${params.PIP_VERSION}
 WEB_PORT=${params.WEB_PORT}
 WEBDOCTO_SECRET=${env.WEBDOCTO_SECRET ?: 'change-me-in-production'}
 N8N_WEBHOOK_URL=${env.N8N_WEBHOOK_URL ?: 'https://n8n.sahapat.com:5678/webhook/WebDocToFolw'}
 """
+
+          sh '''
+            set -eu
+            mkdir -p data/sessions
+            chmod -R u+rwX,g+rwX data
+          '''
         }
       }
     }
